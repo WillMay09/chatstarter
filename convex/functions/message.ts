@@ -1,4 +1,4 @@
-import {mutation,query} from "../_generated/server";
+import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 
 //query the database, rn it fetches all messages
@@ -10,6 +10,7 @@ export const list = query({
 });
 //modify data in the database
 export const create = mutation({
+  //defines arguments mutation expects
   args: {
     sender: v.string(),
     content: v.string(),
