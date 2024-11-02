@@ -1,7 +1,12 @@
 "use client";
-import {Authenticated,Unauthenticated,useMutation, useQuery} from "convex/react";
+import {
+  Authenticated,
+  Unauthenticated,
+  useMutation,
+  useQuery,
+} from "convex/react";
 import React, { useState } from "react";
-import {api} from "../../convex/_generated/api"
+import { api } from "../../convex/_generated/api";
 import { SignInButton } from "@clerk/nextjs";
 // interface Message {
 //   sender: string;
@@ -22,36 +27,33 @@ export default function Home() {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
-    createMessage({sender: "Alice", content: input});
+    createMessage({ sender: "Alice", content: input });
     setInput("");
   };
   return (
     <>
-    <Authenticated>
-    <div>
-      {messages?.map((message, index) => (
-        <div key={index}>
-          <strong>{message.sender}</strong>: {message.content}
+      <Authenticated>
+        <div>
+          {messages?.map((message, index) => (
+            <div key={index}>
+              <strong>{message.sender}</strong>: {message.content}
+            </div>
+          ))}
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="message"
+              id="message"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <button type="submit">Send</button>
+          </form>
         </div>
-      ))}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="message"
-          id="message"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-        />
-        <button type="submit">Send</button>
-      </form>
-    </div>
-    </Authenticated>
-    <Unauthenticated>
-      <SignInButton/>
-
-
-      
-    </Unauthenticated>
+      </Authenticated>
+      <Unauthenticated>
+        <SignInButton />
+      </Unauthenticated>
     </>
   );
 }
