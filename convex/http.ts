@@ -5,16 +5,16 @@ import type { WebhookEvent } from "@clerk/nextjs/server";
 import { internal } from "./_generated/api";
 const http = httpRouter();
 
-http.route({
+http.route({//current routes
   method: "POST",
   path: "/clerk-webhook",
   handler: httpAction(async (ctx, req) => {
-    const body = await validateRequest(req);
-    if (!body) {
+    const body = await validateRequest(req);//call upon validate request
+    if (!body) {//if nothing returns
       return new Response("Unauthorized", { status: 401 });
     }
-    switch (body.type) {
-      case "user.created":
+    switch (body.type) {//information from clerk authentication
+      case "user.created"://calling a mutation function on the backend
         await ctx.runMutation(internal.functions.user.upsert, {
           username: body.data.username!,
           image: body.data.image_url,
@@ -40,6 +40,8 @@ http.route({
     return new Response("OK", { status: 200 });
   }),
 });
+
+//ensures incoming request is from a verified source(svix)
 const validateRequest = async (req: Request) => {
   const svix_id = req.headers.get("svix-id");
   const svix_timestamp = req.headers.get("svix-timestamp");

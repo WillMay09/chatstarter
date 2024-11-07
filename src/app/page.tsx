@@ -1,10 +1,5 @@
 "use client";
-import {
-  Authenticated,
-  Unauthenticated,
-  useMutation,
-  useQuery,
-} from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import React, { useState } from "react";
 import { api } from "../../convex/_generated/api";
 import { SignInButton } from "@clerk/nextjs";
@@ -12,7 +7,9 @@ import { SignInButton } from "@clerk/nextjs";
 //   sender: string;
 //   content: string;
 // }
-
+import { RedirectToSignIn } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
+import { Authenticated, Unauthenticated } from "convex/react";
 export default function Home() {
   // const [messages, setMessages] = useState<Message[]>([
   //   { sender: "alice", content: "Hello world" },
@@ -26,7 +23,7 @@ export default function Home() {
   const [input, setInput] = useState("");
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
+    event?.preventDefault();//prints the message on screen, and updates the db
     createMessage({ sender: "Alice", content: input });
     setInput("");
   };
@@ -34,7 +31,7 @@ export default function Home() {
     <>
       <Authenticated>
         <div>
-          {messages?.map((message, index) => (
+          {messages?.map((message, index) => (//each message in the db gets added to the screen with sender in bold
             <div key={index}>
               <strong>{message.sender}</strong>: {message.content}
             </div>
@@ -45,7 +42,7 @@ export default function Home() {
               name="message"
               id="message"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setInput(e.target.value)}//updates state from text input
             />
             <button type="submit">Send</button>
           </form>

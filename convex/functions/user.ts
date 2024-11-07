@@ -1,7 +1,12 @@
-import { internalMutation } from "../_generated/server";
+import { internalMutation, MutationCtx, QueryCtx,query } from "../_generated/server";
 import { v } from "convex/values";
-
-export const upsert = internalMutation({
+//user functions for interacting with the db, triggered by webhook handler
+export const get = query({//retrieve current user
+  handler: async (ctx) => {
+    return await getCurrentUser(ctx);
+  },
+});
+export const upsert = internalMutation({//add or update user
   args: {
     username: v.string(),
     image: v.string(),
@@ -27,16 +32,32 @@ export const upsert = internalMutation({
   },
 });
 
-export const remove = internalMutation({
+export const remove = internalMutation({//removes user
   args: { clerkId: v.string() },
   handler: async (ctx, { clerkId }) => {
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
-      .unique();
-
+    const user = await getUserByClerkId(ctx, clerkId);
     if (user) {
       await ctx.db.delete(user._id);
     }
   },
 });
+
+
+//helper functions
+const getCurrentUser = async (ctx: QueryCtx | MutationCtx) => {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    return null;
+  }
+  return await getUserByClerkId(ctx, identity.subject);
+};
+
+const getUserByClerkId = async (
+  ctx: QueryCtx | MutationCtx,
+  clerkId: string
+) => {
+  return await ctx.db
+    .query("users")
+    .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
+    .unique();
+};
