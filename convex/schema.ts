@@ -11,12 +11,13 @@ export default defineSchema({
     .index("by_username", ["username"]),
 
   messages: defineTable({
-    sender: v.string(),
+    sender: v.id("users"),
     content: v.string(),
-  }),
+    directMessage: v.id("directMessages"),
+  }).index("by_direct_message", ["directMessage"]),
   friends: defineTable({
-    user1: v.id("users"),//sender
-    user2: v.id("users"),//reciever
+    user1: v.id("users"), //sender
+    user2: v.id("users"), //reciever
     status: v.union(
       v.literal("pending"),
       v.literal("accepted"),
@@ -25,4 +26,12 @@ export default defineSchema({
   })
     .index("by_user1_status", ["user1", "status"])
     .index("by_user2_status", ["user2", "status"]),
+  directMessages: defineTable({}),
+  directMessageMembers: defineTable({
+    directMessage: v.id("directMessages"),
+    user: v.id("users"),
+  })
+    .index("by_user", ["user"])
+    .index("by_direct_message", ["directMessage"])
+    .index("by_direct_message_user", ["directMessage", "user"]),
 });

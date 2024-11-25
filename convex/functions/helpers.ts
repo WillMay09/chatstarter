@@ -11,7 +11,7 @@ export const authenticatedQuery = customQuery(query,customCtx(async(ctx) =>{
     }
     return {user};
 }))
-
+//both functions use getCurrentUser, to grab the user from the db,perform an authentication check
 export const authenticatedMutation = customMutation(mutation,customCtx(async (ctx) =>{
 
     const user = await getCurrentUser(ctx);
