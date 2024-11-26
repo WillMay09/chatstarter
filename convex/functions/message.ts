@@ -1,6 +1,8 @@
 import { mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import { authenticatedMutation, authenticatedQuery } from "./helpers";
+import { internal } from "../_generated/api";
+
 
 //query the database, fetch all messages from a specific direct message channel
 //ctx is how the function interacts with db data
@@ -65,6 +67,10 @@ export const create = authenticatedMutation({
       directMessage,//ID of direct message channel
       sender: ctx.user._id, //Id of the user sending the message
     });
+    await ctx.scheduler.runAfter(0, internal.functions.typing.remove,{
+      directMessage,
+      user:ctx.user._id,
+    })
   },
 });
 
