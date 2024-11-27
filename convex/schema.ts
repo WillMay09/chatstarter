@@ -14,6 +14,7 @@ export default defineSchema({
     sender: v.id("users"),
     content: v.string(),
     directMessage: v.id("directMessages"),
+    attachment: v.optional(v.id("_storage")),//convex storage id
   }).index("by_direct_message", ["directMessage"]),
   friends: defineTable({
     user1: v.id("users"), //sender

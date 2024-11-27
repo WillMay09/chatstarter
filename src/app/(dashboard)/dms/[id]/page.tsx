@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { use, useRef, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -39,6 +39,7 @@ import { FunctionReturnType } from "convex/server";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import  Image from "next/image.js";
 export default function MessagePage({
   params,
 }: {
@@ -87,6 +88,16 @@ function MessageItem({ message }: { message: Message }) {
           {message.sender?.username ?? "Deleted User"}
         </p>
         <p className="text-sm">{message.content}</p>
+        {message.attachment && (
+          <Image
+            src={message.attachment}
+            alt="attachment"
+            width={300}
+            height={300}
+            className="rounded border overflowhidden"
+          />
+          
+        )}
       </div>
       <MessageActions message={message} />
     </div>
@@ -144,11 +155,28 @@ function MessageInput({
   const [content, setContent] = useState("");
   const sendMessage = useMutation(api.functions.message.create);
   const sendTypingIndicator = useMutation(api.functions.typing.upsert);
+  const generateUploadURL = useMutation(
+    api.functions.message.generatedUploadUrl
+  );
+  const [attachment, setAttachment] = useState<Id<"_storage">>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await generateUploadURL();
+    const res = await fetch(url, {
+      method: "POST",
+      body: file, //return a json object
+    });
+    const { storageId } = (await res.json()) as { storageId: Id<"_storage"> };
+    setAttachment(storageId);
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      await sendMessage({ directMessage, content });
+      await sendMessage({ directMessage, attachment, content });
       setContent("");
+      setAttachment(undefined);
     } catch (error) {
       toast.error("Failed to send message", {
         description:
@@ -157,21 +185,40 @@ function MessageInput({
     }
   };
   return (
-    <form className="flex items-center p-4 gap-2" onSubmit={handleSubmit}>
-      <Input
-        placeholder="Message"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        onKeyDown={(e) => {
-          if (content.length > 0) {
-            sendTypingIndicator({ directMessage });
-          }
-        }}
+    <>
+      <form className="flex items-center p-4 gap-2" onSubmit={handleSubmit}>
+        <Button
+        type="button"
+          size="icon"
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+        >
+          <PlusIcon />
+          {/* attachment button */}
+          <span className="sr-only">Attach</span>
+        </Button>
+        <Input
+          placeholder="Message"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={(e) => {
+            if (content.length > 0) {
+              sendTypingIndicator({ directMessage });
+            }
+          }}
+        />
+        <Button size="icon">
+          <SendIcon />
+          <span className="sr-only">Send</span>
+        </Button>
+      </form>
+      <input
+        type="file"
+        className="hidden"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
       />
-      <Button size="icon">
-        <SendIcon />
-        <span className="sr-only">Send</span>
-      </Button>
-    </form>
+    </>
   );
 }
